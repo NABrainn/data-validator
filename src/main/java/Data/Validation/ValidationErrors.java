@@ -2,48 +2,41 @@ package Data.Validation;
 
 import Data.Exception.ValueMissingException;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
-public record ValidationErrors(List<ValidationError> all) {
+public record ValidationErrors(Map<String, String> errorMap) {
     public ValidationErrors {
-        if(all == null) {
-            throw new ValueMissingException("Error list is null");
+        if(errorMap == null) {
+            throw new ValueMissingException("Error errorMap is null");
         }
-        var match = all
+        errorMap = Collections.unmodifiableMap(errorMap);
+        var match = errorMap
+                .entrySet()
                 .stream()
-                .anyMatch(Objects::isNull);
+                .anyMatch(entry -> {
+                    var key = entry.getKey();
+                    var value = entry.getValue();
+                    return key == null || value == null;
+                });
 
         if(match) {
-            throw new ValueMissingException("List contains objects that are null");
+            throw new ValueMissingException("Map contains keys or values that are null");
         }
     }
 
-    public Optional<ValidationError> getFirst() {
-        try {
-            return Optional.of(all.getFirst());
+    public Optional<String> get(String key) {
+        if(key == null) {
+            throw new ValueMissingException("Provided key is null");
         }
-        catch (NoSuchElementException e) {
-            return Optional.empty();
-        }
+        var error = errorMap.get(key);
+        return Optional.ofNullable(error);
     }
 
-    public Optional<ValidationError> getLast() {
-        try {
-            return Optional.of(all.getLast());
-        }
-        catch (NoSuchElementException e) {
-            return Optional.empty();
-        }
+    public boolean filled() {
+        return !errorMap.isEmpty();
     }
 
-    public boolean hasErrors() {
-        return !all.isEmpty();
-    }
-
-    public static ValidationErrors of(List<ValidationError> validationItems) {
-        return new ValidationErrors(validationItems);
+    public static ValidationErrors of(Map<String, String> map) {
+        return new ValidationErrors(map);
     }
 }

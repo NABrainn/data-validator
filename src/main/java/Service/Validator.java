@@ -8,10 +8,9 @@ import Data.Result.ValidationFailure;
 import Data.Result.ValidationResult;
 import Data.Result.ValidationSuccess;
 import Data.Rules.Rule;
-import Data.Validation.ValidationError;
 import Data.Validation.ValidationErrors;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class Validator {
     public static <T extends Data> ValidationResult<T> validate(T data) throws ValidationException {
@@ -19,7 +18,7 @@ public final class Validator {
             throw new ValueMissingException("data is null");
         }
 
-        var validations = new ArrayList<ValidationError>();
+        var errorMap = new HashMap<String, String>();
         var fields = data.getClass().getDeclaredFields();
         var rules = data.rules();
 
@@ -40,16 +39,16 @@ public final class Validator {
                 var valid = executeRule(rule, value);
 
                 if(!valid) {
-                    validations.add(ValidationError.of(fieldName, rule.message()));
+                    errorMap.put(fieldName, rule.message());
                 }
             } catch (IllegalAccessException exception) {
                 throw new DataConfigurationException("Could not read field " + fieldName);
             }
         }
 
-        var validationErrors = ValidationErrors.of(validations);
+        var validationErrors = ValidationErrors.of(errorMap);
 
-        if (validationErrors.hasErrors()) {
+        if (validationErrors.filled()) {
             return ValidationFailure.of(validationErrors);
         }
 
