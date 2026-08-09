@@ -34,7 +34,7 @@ public record ValidationErrors(Map<String, Map<String, String>> errorMap) {
         var ruleMap = errorMap.get(fieldName);
 
         if(ruleMap == null) {
-            throw new ValueMissingException("Invalid field name: " + fieldName);
+            return List.of();
         }
 
         return ruleMap.values().stream().toList();
