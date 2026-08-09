@@ -1,4 +1,4 @@
-package Data.Exception;
+package DataValidator.Data.Exception;
 
 public class ValidationException extends RuntimeException {
     public ValidationException(String message) {

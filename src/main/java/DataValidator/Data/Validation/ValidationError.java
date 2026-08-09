@@ -1,6 +1,6 @@
-package Data.Validation;
+package DataValidator.Data.Validation;
 
-import Data.Exception.ValueMissingException;
+import DataValidator.Data.Exception.ValueMissingException;
 
 public record ValidationError(String fieldName, String message) {
     public ValidationError {

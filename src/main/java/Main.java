@@ -1,17 +1,17 @@
-import Data.Exception.ValidationException;
-import Data.Result.ValidationFailure;
-import Data.Result.ValidationSuccess;
-import Data.Rules.Required;
-import Data.Rules.Rule;
-import Data.Core.Data;
-import Service.Validator;
+import DataValidator.Data.Exception.ValidationException;
+import DataValidator.Data.Result.ValidationFailure;
+import DataValidator.Data.Result.ValidationSuccess;
+import DataValidator.Data.Rules.Required;
+import DataValidator.Data.Rules.Rule;
+import DataValidator.Data.Core.Data;
+import DataValidator.Service.Validator;
 
 record UserRequest(String firstName, String lastName) implements Data {
     @Override
-    public Map<String, Rule<?>> rules() {
+    public Map<String, List<Rule<?>>> rules() {
         return Map.of(
-                "firstName", Required.of(),
-                "lastName", Required.of()
+                "firstName", List.of(Required.of()),
+                "lastName", List.of(Required.of())
         );
     }
 
@@ -33,7 +33,9 @@ void main() {
         var result = Validator.validate(dirtyRequest);
         switch (result) {
             case ValidationFailure(var errors) -> {
-                IO.println(errors.toString());
+                for(var error : errors.getMessages("firstName")) {
+                    IO.println(error);
+                }
             }
             case ValidationSuccess(var cleanRequest) -> {
                 var user = User.of(cleanRequest);
