@@ -7,4 +7,5 @@ import java.util.Map;
 
 public interface Data {
     Map<String, List<Rule<?>>> rules();
+    Operation mapToOperation();
 }

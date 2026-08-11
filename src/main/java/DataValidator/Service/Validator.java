@@ -12,15 +12,16 @@ import DataValidator.Data.Validation.ValidationErrors;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
 
 public final class Validator {
-    public static <T extends Data> ValidationResult<T> validate(T data) throws ValidationException {
+    public static <T extends Record & Data> ValidationResult<T> validate(T data) throws ValidationException {
         if (data == null) {
             throw new ValueMissingException("data is null");
         }
 
         var errorMap = new HashMap<String, Map<String, String>>();
-        var fields = data.getClass().getDeclaredFields();
+        var fields = data.getClass().getRecordComponents();
         var ruleMap = data.rules();
 
         for (var field : fields) {
@@ -32,11 +33,12 @@ public final class Validator {
             }
 
             try {
-                if (!field.trySetAccessible()) {
+                var accessor = field.getAccessor();
+                if (!accessor.trySetAccessible()) {
                     throw new DataConfigurationException("Field " + fieldName + " is not accessible");
                 }
 
-                var fieldValue = field.get(data);
+                var fieldValue = accessor.invoke(data);
                 var invalidRuleMap = new HashMap<String, String>();
 
 
@@ -51,7 +53,7 @@ public final class Validator {
                 if(!invalidRuleMap.isEmpty()) {
                     errorMap.put(fieldName, Map.copyOf(invalidRuleMap));
                 }
-            } catch (IllegalAccessException exception) {
+            } catch (IllegalAccessException | InvocationTargetException exception) {
                 throw new DataConfigurationException("Could not read field " + fieldName);
             }
         }
