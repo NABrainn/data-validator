@@ -1,6 +1,7 @@
 package DataValidator.Service;
 
 import DataValidator.Data.Core.Data;
+import DataValidator.Data.Core.Operation;
 import DataValidator.Data.Exception.DataConfigurationException;
 import DataValidator.Data.Exception.ValueMissingException;
 import DataValidator.Data.Exception.ValidationException;
@@ -15,7 +16,7 @@ import java.util.Map;
 import java.lang.reflect.InvocationTargetException;
 
 public final class Validator {
-    public static <T extends Record & Data> ValidationResult<T> validate(T data) throws ValidationException {
+    public static <T extends Record & Data<? extends Operation>> ValidationResult<T> validate(T data) throws ValidationException {
         if (data == null) {
             throw new ValueMissingException("data is null");
         }

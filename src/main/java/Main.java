@@ -1,4 +1,4 @@
-import DataValidator.Data.Core.Operation;
+import DataValidator.Data.Core.Command;
 import DataValidator.Data.Exception.ValidationException;
 import DataValidator.Data.Result.ValidationFailure;
 import DataValidator.Data.Result.ValidationSuccess;
@@ -7,7 +7,7 @@ import DataValidator.Data.Rules.Rule;
 import DataValidator.Data.Core.Data;
 import DataValidator.Service.Validator;
 
-record UserRequest(String firstName, String lastName) implements Data{
+record UserRequest(String firstName, String lastName) implements Data<User>{
     @Override
     public Map<String, List<Rule<?>>> rules() {
         return Map.of(
@@ -17,8 +17,8 @@ record UserRequest(String firstName, String lastName) implements Data{
     }
 
     @Override
-    public Operation mapToOperation() {
-        return null;
+    public User mapToOperation() {
+        return User.of(firstName, lastName);
     }
 
     public static UserRequest of(String firstName, String lastName) {
@@ -26,10 +26,10 @@ record UserRequest(String firstName, String lastName) implements Data{
     }
 }
 
-record User(String firstName, String lastName) {
+record User(String firstName, String lastName) implements Command {
 
-    public static User of(UserRequest userRequest) {
-        return new User(userRequest.firstName(), userRequest.lastName());
+    public static User of(String firstName, String lastName) {
+        return new User(firstName, lastName);
     }
 }
 
@@ -44,8 +44,7 @@ void main() {
                 }
             }
             case ValidationSuccess(var cleanRequest) -> {
-                var fname = cleanRequest.firstName();
-                IO.println(fname);
+                var command = cleanRequest.mapToOperation();
             }
         }
     } catch (ValidationException e) {
